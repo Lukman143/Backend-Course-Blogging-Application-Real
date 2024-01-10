@@ -152,7 +152,7 @@ public class PostController {
 												   @PathVariable Integer postId) throws IOException {
 
 		PostDto postDto = this.postService.getPostById(postId);
-		
+
 		// If an image already exists, delete the old one
 		if (postDto.getImageName() != null && !postDto.getImageName().isEmpty()) {
 			this.fileService.deleteImage(path, postDto.getImageName());

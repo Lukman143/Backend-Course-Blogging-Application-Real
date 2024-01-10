@@ -1,5 +1,6 @@
 package com.sk.blog.controllers;
 
+import com.sk.blog.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class CommentController {
 
 	@Autowired
 	private CommentService commentService;
+
 
 	@PostMapping("/post/{postId}/comments")
 	public ResponseEntity<CommentDto> createComment(@RequestBody CommentDto comment, @PathVariable Integer postId) {

@@ -49,6 +49,9 @@ public class User implements UserDetails {
 
 	private String about;
 
+	@Column(name = "reset_token")
+	private String resetToken;
+
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<Post> posts = new ArrayList<>();
 
@@ -87,6 +90,14 @@ public class User implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
 	}
 
 }

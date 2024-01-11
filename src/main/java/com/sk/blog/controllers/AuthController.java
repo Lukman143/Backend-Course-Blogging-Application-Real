@@ -2,10 +2,15 @@
 package com.sk.blog.controllers;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.validation.Valid;
-
+import org.springframework.mail.SimpleMailMessage;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +21,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +54,12 @@ public class AuthController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private JavaMailSender javaMailSender;
 
 	@PostMapping("/login")
 	public ResponseEntity<JwtAuthResponse> createToken(@RequestBody JwtAuthRequest request) throws Exception {
@@ -97,5 +109,74 @@ public class AuthController {
 		User user = this.userRepo.findByEmail(principal.getName()).get();
 		return new ResponseEntity<UserDto>(this.mapper.map(user, UserDto.class), HttpStatus.OK);
 	}
+//{
+//  "email": "user@example.com"
+//}
+	@PostMapping("/reset-password/request")
+	public ResponseEntity<?> requestResetPassword(@RequestBody Map<String, String> requestMap) {
+		// Check if the email exists in the database
+		String email = requestMap.get("email");
+		if (email != null) {
+			Optional<User> optionalUser = userRepo.findByEmail(email);
+			if (optionalUser.isPresent()) {
+				User user = optionalUser.get();
+
+				// Generate a reset token (you may want to use a library for this)
+				String resetToken = RandomStringUtils.randomAlphanumeric(6);
+				// Set/reset token and expiration time in the database
+				user.setResetToken(resetToken);
+				userRepo.save(user);
+
+				// Send the reset link or token to the user's email (you need to implement this)
+				sendResetPasswordEmail(user.getEmail(), resetToken);
+
+
+				return new ResponseEntity<>("Password reset request received. Check your email for instructions.", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>("No user found with the provided email address.", HttpStatus.NOT_FOUND);
+			}
+		} else {
+			return new ResponseEntity<>("Email address is required.", HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	private void sendResetPasswordEmail(String toEmail, String resetToken) {
+		SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setTo(toEmail);
+		mailMessage.setSubject("Password Reset Request");
+		mailMessage.setText("Please reset your password, taking the following OTP: "+ resetToken);
+		javaMailSender.send(mailMessage);
+	}
+
+	// Reset password with token
+//	{
+//		"resetToken": "your_reset_token_here",
+//			"newPassword": "new_password_here"
+//	}
+	@PostMapping("/reset-password/confirm")
+	public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> requestMap) {
+		// Find user by reset token
+		String resetToken = requestMap.get("resetToken");
+		if (resetToken != null) {
+			//Optional<User> optionalUser = userRepo.findByResetToken(resetToken);
+			Optional<User> optionalUser = userRepo.findByResetToken(resetToken);
+
+			if (optionalUser.isPresent()) {
+				User user = optionalUser.get();
+
+				// Update the password and reset token
+				user.setPassword(passwordEncoder.encode(requestMap.get("newPassword")));
+				user.setResetToken(null);
+				userRepo.save(user);
+
+				return new ResponseEntity<>("Password successfully reset.", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>("Invalid reset token.", HttpStatus.BAD_REQUEST);
+			}
+		} else {
+			return new ResponseEntity<>("Reset token is required.", HttpStatus.BAD_REQUEST);
+		}
+	}
+
 
 }

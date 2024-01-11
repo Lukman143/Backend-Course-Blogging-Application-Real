@@ -1,6 +1,7 @@
 package com.sk.blog;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import com.sk.blog.config.AppConstants;
 import com.sk.blog.entities.Role;
 import com.sk.blog.repositories.RoleRepo;
@@ -25,6 +27,23 @@ public class BlogAppApisApplication implements CommandLineRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BlogAppApisApplication.class, args);
+	}
+
+	@Bean
+	public JavaMailSender javaMailSender() {
+		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+		mailSender.setHost("smtp.gmail.com");
+		mailSender.setPort(587);
+		mailSender.setUsername("wasimsk6061@gmail.com");
+		mailSender.setPassword("zvxt lsoh lklt bncg");
+
+		// Enable STARTTLS
+		Properties properties = mailSender.getJavaMailProperties();
+		properties.put("mail.smtp.starttls.enable", "true");
+		properties.put("mail.smtp.auth", "true");
+		properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+		return mailSender;
 	}
 
 	@Bean

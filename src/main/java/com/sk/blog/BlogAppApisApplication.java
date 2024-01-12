@@ -1,5 +1,6 @@
 package com.sk.blog;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -66,8 +67,9 @@ public class BlogAppApisApplication implements CommandLineRunner {
 			role1.setId(AppConstants.NORMAL_USER);
 			role1.setName("ROLE_NORMAL");
 
-			List<Role> roles = List.of(role, role1);
-
+			List<Role> roles = new ArrayList<>();
+			roles.add(role);
+			roles.add(role1);
 			List<Role> result = this.roleRepo.saveAll(roles);
 
 			result.forEach(r -> {

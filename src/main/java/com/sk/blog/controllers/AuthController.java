@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import javax.validation.Valid;
+
+import com.sk.blog.twilio.TwilioConfig;
 import org.springframework.mail.SimpleMailMessage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,6 +40,8 @@ import com.sk.blog.payloads.UserDto;
 import com.sk.blog.repositories.UserRepo;
 import com.sk.blog.security.JwtTokenHelper;
 import com.sk.blog.services.UserService;
+import com.twilio.Twilio;
+import com.twilio.rest.api.v2010.account.Message;
 
 @RestController
 @RequestMapping("/api/v1/auth/")
@@ -60,6 +64,9 @@ public class AuthController {
 
 	@Autowired
 	private JavaMailSender javaMailSender;
+
+	@Autowired
+	private TwilioConfig twilioConfig;
 
 	@PostMapping("/login")
 	public ResponseEntity<JwtAuthResponse> createToken(@RequestBody JwtAuthRequest request) throws Exception {
@@ -129,7 +136,7 @@ public class AuthController {
 
 				// Send the reset link or token to the user's email (you need to implement this)
 				sendResetPasswordEmail(user.getEmail(), resetToken);
-
+				sendResetPasswordOTP("9890448392",resetToken);
 
 				return new ResponseEntity<>("Password reset request received. Check your email for instructions.", HttpStatus.OK);
 			} else {
@@ -147,6 +154,32 @@ public class AuthController {
 		mailMessage.setText("Please reset your password, taking the following OTP: "+ resetToken);
 		javaMailSender.send(mailMessage);
 	}
+
+
+	public void sendResetPasswordOTP(String mobileNumber, String resetToken) {
+		// Initialize the Twilio client
+		Twilio.init(twilioConfig.getAccountSid(), twilioConfig.getAuthToken());
+
+		// Construct the message body
+		String otpMessage = "Your OTP for password reset is: " + resetToken;
+
+		try {
+			// Send the SMS using Twilio API
+			Message message = Message.creator(
+							new com.twilio.type.PhoneNumber("+91" + mobileNumber), // Replace with the user's mobile number
+							new com.twilio.type.PhoneNumber(twilioConfig.getPhoneNumber()),
+							otpMessage)
+					.create();
+
+			System.out.println("SMS sent with SID: " + message.getSid());
+		} catch (Exception e) {
+			// Handle exceptions appropriately
+			e.printStackTrace();
+		}
+	}
+
+
+
 
 	// Reset password with token
 //	{

@@ -136,7 +136,7 @@ public class AuthController {
 
 				// Send the reset link or token to the user's email (you need to implement this)
 				sendResetPasswordEmail(user.getEmail(), resetToken);
-				sendResetPasswordOTP("9890448392",resetToken);
+				//sendResetPasswordOTP("9890448392",resetToken);
 
 				return new ResponseEntity<>("Password reset request received. Check your email for instructions.", HttpStatus.OK);
 			} else {

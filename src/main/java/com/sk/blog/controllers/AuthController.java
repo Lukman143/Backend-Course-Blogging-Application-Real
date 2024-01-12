@@ -159,7 +159,7 @@ public class AuthController {
 	public void sendResetPasswordOTP(String mobileNumber, String resetToken) {
 		// Initialize the Twilio client
 		Twilio.init(twilioConfig.getAccountSid(), twilioConfig.getAuthToken());
-
+//		Spring Boot to send SMS messages using FMS (Firebase Cloud Messaging) this used in other project in org
 		// Construct the message body
 		String otpMessage = "Your OTP for password reset is: " + resetToken;
 

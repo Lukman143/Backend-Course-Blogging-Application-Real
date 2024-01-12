@@ -158,9 +158,7 @@ public class AuthController {
 		// Find user by reset token
 		String resetToken = requestMap.get("resetToken");
 		if (resetToken != null) {
-			//Optional<User> optionalUser = userRepo.findByResetToken(resetToken);
 			Optional<User> optionalUser = userRepo.findByResetToken(resetToken);
-
 			if (optionalUser.isPresent()) {
 				User user = optionalUser.get();
 
@@ -177,6 +175,4 @@ public class AuthController {
 			return new ResponseEntity<>("Reset token is required.", HttpStatus.BAD_REQUEST);
 		}
 	}
-
-
 }
